@@ -18,12 +18,12 @@ main .columns > div > div:not(.columns-contains-image) {
 main .columns > div > div.columns-contains-image {
   order: 1;
   position: relative;
-  height: 170px;
+  min-height: 170px;
 }
 
 @media (min-width: 700px) {
   main .columns > div > div.columns-contains-image {
-    height: 355px;
+    min-height: 355px;
   }
 }
 
@@ -43,7 +43,8 @@ main .columns > div > div.columns-contains-image {
 
   main .columns > div > div.columns-contains-image {
     order: unset;
-    height: 260px;
+    align-self: stretch;
+    min-height: 260px;
   }
 
   main .columns > div > div:not(.columns-contains-image) {
@@ -53,7 +54,7 @@ main .columns > div > div.columns-contains-image {
 
 @media (min-width: 1200px) {
   main .columns > div > div.columns-contains-image {
-    height: 355px;
+    min-height: 355px;
   }
 
   main .columns > div > div:not(.columns-contains-image) {
