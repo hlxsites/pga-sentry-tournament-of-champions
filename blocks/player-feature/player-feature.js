@@ -34,19 +34,21 @@ function buildVideoContent(section) {
 
 export default async function decorate(block) {
   const link = block.querySelector('a');
-  const source = link.getAttribute('href');
-  if (source && link.textContent.endsWith(source)) {
-    const resp = await fetch(`${source}.plain.html`);
-    if (resp.ok) {
-      const html = await resp.text();
-      const feature = document.createElement('div');
-      feature.innerHTML = html;
-      block.innerHTML = `<div>${feature.querySelector('div').outerHTML}</div>`;
-      const video = block.querySelector('.embed, .video');
-      decorateButtons(block);
-      if (video) {
-        decorateBlock(video);
-        await loadBlock(video);
+  if (link) {
+    const source = link.getAttribute('href');
+    if (source && link.textContent.endsWith(source)) {
+      const resp = await fetch(`${source}.plain.html`);
+      if (resp.ok) {
+        const html = await resp.text();
+        const feature = document.createElement('div');
+        feature.innerHTML = html;
+        block.innerHTML = `<div>${feature.querySelector('div').outerHTML}</div>`;
+        const video = block.querySelector('.embed, .video');
+        decorateButtons(block);
+        if (video) {
+          decorateBlock(video);
+          await loadBlock(video);
+        }
       }
     }
   }
@@ -72,7 +74,7 @@ export default async function decorate(block) {
   // order content
   const content = [status, name, wrappedCredits];
   if (hasBio) content.push(credits.nextElementSibling);
-  content.push(button);
+  if (button) content.push(button);
   if (video) content.push(video);
 
   // wrap content

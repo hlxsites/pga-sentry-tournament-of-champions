@@ -20,6 +20,17 @@ async function mergeLocalNews(feed, maxItems) {
     }
     return false;
   });
+  // check feed items for relative links
+  feed.items.map((item) => {
+    const { link } = item;
+    const { host, pathname } = new URL(link);
+    if (host.includes('pgatour.com')) {
+      const splitPath = `/${pathname.split('/').slice(3).join('/')}`;
+      const match = matched.find((m) => splitPath.includes(m.path));
+      if (match) item.link = splitPath;
+    }
+    return item;
+  });
   const merged = [...feed.items, ...matched];
   const deduped = [...new Map(merged.map((m) => [
     new URL(m.link, window.location.href).pathname.split('.')[0],

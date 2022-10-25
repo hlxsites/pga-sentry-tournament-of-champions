@@ -76,13 +76,13 @@ function getStartEndDates(countdown, spanStr) {
   if (spanStr.includes('-')) {
     const [start, end] = spanStr.split(' ').find((s) => s.includes('-')).replace(',', '').split('-');
     return {
-      start: `${parseInt(countdown.year, 10) - 1}${countdown.month}${start.padStart(2, '0')}`,
-      end: `${parseInt(countdown.year, 10) + 1}${countdown.month}${end.padStart(2, '0')}`,
+      start: `${parseInt(countdown.year, 10) - 5}${countdown.month}${start.padStart(2, '0')}`,
+      end: `${parseInt(countdown.year, 10) + 5}${countdown.month}${end.padStart(2, '0')}`,
     };
   }
   return {
-    start: `${parseInt(countdown.year, 10) - 1}${countdown.month}01`,
-    end: `${parseInt(countdown.year, 10) + 1}${countdown.month}28`,
+    start: `${parseInt(countdown.year, 10) - 5}${countdown.month}01`,
+    end: `${parseInt(countdown.year, 10) + 5}${countdown.month}28`,
   };
 }
 

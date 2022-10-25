@@ -28,9 +28,9 @@ function debounce(func, timeout = 500) {
 const checkBottomAdDisplay = debounce(() => {
   const topAd = document.getElementById('pb-slot-top');
   const bottomAd = document.getElementById('sticky-anchor--wrapper');
-  if (isInViewport(topAd)) {
+  if (isInViewport(topAd) && bottomAd) {
     bottomAd.setAttribute('aria-hidden', true);
-  } else if (bottomAd.getAttribute('aria-hidden') !== 'false') {
+  } else if (bottomAd && bottomAd.getAttribute('aria-hidden') !== 'false') {
     bottomAd.setAttribute('aria-hidden', false);
   }
 });
