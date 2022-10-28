@@ -646,12 +646,18 @@ export function decorateButtons(element) {
       }
     }
   });
+  // combine adjacent button containers
   element.querySelectorAll('.button-container').forEach((container) => {
-    const next = container.nextElementSibling;
-    if (next && next.className === 'button-container') {
-      [...next.children].forEach((button) => container.append(button));
-      next.remove();
+    const adjacentContainers = [];
+    let next = container.nextElementSibling;
+    while (next && next.className === 'button-container') {
+      adjacentContainers.push(next);
+      next = next.nextElementSibling;
     }
+    adjacentContainers.forEach((ac) => {
+      [...ac.children].forEach((child) => container.append(child));
+      ac.remove();
+    });
   });
 }
 

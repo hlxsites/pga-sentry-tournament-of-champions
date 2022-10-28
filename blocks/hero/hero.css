@@ -27,6 +27,7 @@ main .hero > div > div {
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
+  align-content: center;
   align-items: center;
   justify-content: center;
   gap: 0 8px;
