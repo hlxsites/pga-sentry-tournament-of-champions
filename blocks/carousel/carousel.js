@@ -176,13 +176,13 @@ export default async function decorate(block) {
         });
         const carouselText = row.querySelector('.carousel-text');
         if (carouselText) {
-          const readMoreBtn = carouselText.querySelector('a[title="Read More"], a[title="READ MORE"]');
-          // pull 'read more' button out of button container
-          if (readMoreBtn) {
-            readMoreBtn.classList.add('read-more');
-            const btnContainer = readMoreBtn.closest('.button-container');
-            btnContainer.parentElement.insertBefore(readMoreBtn, btnContainer);
-            // if 'read more' is only button, remove button container
+          const secondaryBtn = carouselText.querySelector('.secondary');
+          // pull first secondary button out of button container
+          if (secondaryBtn) {
+            secondaryBtn.classList.add('read-more');
+            const btnContainer = secondaryBtn.closest('.button-container');
+            btnContainer.parentElement.insertBefore(secondaryBtn, btnContainer);
+            // if secondary is only button, remove button container
             if (!btnContainer.hasChildNodes()) btnContainer.remove();
           }
         }

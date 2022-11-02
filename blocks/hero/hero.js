@@ -4,12 +4,12 @@ export default async function decorate(block) {
   addHeaderSizing(block);
   const btns = block.querySelector('.button-container');
   if (btns) {
-    const readMoreBtn = btns.querySelector('a[title="Read More"], a[title="READ MORE"]');
-    // pull 'read more' button out of button container
-    if (readMoreBtn) {
-      readMoreBtn.classList.add('read-more');
-      btns.parentElement.insertBefore(readMoreBtn, btns);
-      // if 'read more' is only button, remove button container
+    const secondaryBtn = btns.querySelector('.secondary');
+    // pull first secondary button out of button container
+    if (secondaryBtn) {
+      secondaryBtn.classList.add('read-more');
+      btns.parentElement.insertBefore(secondaryBtn, btns);
+      // if secondary is only button, remove button container
       if (!btns.hasChildNodes()) btns.remove();
     }
   }
