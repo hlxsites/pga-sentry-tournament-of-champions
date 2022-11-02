@@ -68,7 +68,7 @@ function getDateObj(dateStr) {
     month: (date.getMonth() + 1).toString().padStart(2, '0'),
     day: date.getDay().toString(),
     hour: date.getHours().toString().padStart(2, '0'),
-    minutes: date.getMinutes.toString(),
+    minutes: date.getMinutes().toString(),
   };
 }
 

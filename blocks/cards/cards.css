@@ -31,13 +31,12 @@ main .cards .cards-card-links {
 }
 
 main .cards h2 {
-  font-size: var(--body-font-size-xl);
   text-transform: uppercase;
 }
 
 @media (min-width: 700px) {
   main .cards h2 {
-    font-size: var(--body-font-size-xxl);
+    font-size: var(--heading-font-size-l);
   }
 }
 
@@ -176,9 +175,8 @@ main .cards .cards-card-links a:hover::after {
 
 /* card image */
 main .cards > ul > li img {
-  height: 180px;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 
@@ -202,7 +200,7 @@ main .cards.overlay .cards-card-body {
   left: 0;
   bottom: 0;
   right: 0;
-  height: 180px;
+  aspect-ratio: 16 / 9;
   margin: 0;
   padding: 16px;
   background-color: #0004;
@@ -214,6 +212,7 @@ main .cards.overlay .cards-card-body {
 @media (min-width: 900px) {
   main .cards.overlay .cards-card-body {
     height: 230px;
+    aspect-ratio: unset;
   }
 }
 
@@ -244,15 +243,15 @@ main .cards.two-cols h3 {
   margin: 0;
 }
 
+@media (min-width: 700px) {
+  main .cards.two-cols > ul > li img {
+    height: 355px;
+  }
+}
+
 @media (min-width: 900px) {
   main .cards.two-cols > ul {
     grid-template-columns: repeat(auto-fill, minmax(calc((100% / 2) - 30px), 1fr));
     grid-gap: 30px;
-  }
-}
-
-@media (min-width: 700px) {
-  main .cards.two-cols > ul > li img {
-    height: 355px;
   }
 }
