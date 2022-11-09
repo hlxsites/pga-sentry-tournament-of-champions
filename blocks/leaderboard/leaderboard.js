@@ -3,23 +3,11 @@ import {
   decorateIcons,
   fetchPlaceholders,
   updateExternalLinks,
+  loadScript,
 } from '../../scripts/scripts.js';
 
 function generateUserTrackingId(id) {
   return window.pgatour.setTrackingUserId(`id${id}`);
-}
-
-function loadScript(url, callback, type) {
-  const head = document.querySelector('head');
-  if (!head.querySelector(`script[src="${url}"]`)) {
-    const script = document.createElement('script');
-    script.src = url;
-    if (type) script.setAttribute('type', type);
-    head.append(script);
-    script.onload = callback;
-    return script;
-  }
-  return head.querySelector(`script[src="${url}"]`);
 }
 
 function buildCell() {

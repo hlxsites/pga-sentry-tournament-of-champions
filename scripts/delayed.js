@@ -5,6 +5,8 @@ import {
   sampleRUM,
   decorateBlock,
   loadBlock,
+  loadScript,
+  getMetadata,
 } from './scripts.js';
 
 const placeholders = await fetchPlaceholders();
@@ -13,19 +15,6 @@ const isProd = window.location.hostname.endsWith(placeholders.hostname);
 if (!isProd) {
   // temporary override for analytics testing
   if (!localStorage.getItem('OptIn_PreviousPermissions')) localStorage.setItem('OptIn_PreviousPermissions', '{"aa":true,"mediaaa":true,"target":true,"ecid":true,"adcloud":true,"aam":true,"campaign":true,"livefyre":false}');
-}
-
-function loadScript(url, callback, type) {
-  const head = document.querySelector('head');
-  if (!head.querySelector(`script[src="${url}"]`)) {
-    const script = document.createElement('script');
-    script.src = url;
-    if (type) script.setAttribute('type', type);
-    head.append(script);
-    script.onload = callback;
-    return script;
-  }
-  return head.querySelector(`script[src="${url}"]`);
 }
 
 // Core Web Vitals RUM collection
@@ -715,3 +704,14 @@ if (otId) {
     loadBlock(adsBlock);
   }
 }
+
+async function loadLiveChat() {
+  const liveChat = getMetadata('live-chat');
+  if (liveChat && ['yes', 'on', 'true'].includes(liveChat.toLowerCase())) {
+    loadScript('//sdk.engage.co/sdk.js', () => { /* noop */ }, {
+      'data-company': placeholders.chatCompany,
+      'data-widget': placeholders.chatWidget,
+    });
+  }
+}
+loadLiveChat();
