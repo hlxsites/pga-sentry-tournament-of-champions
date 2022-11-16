@@ -2,7 +2,11 @@ function displayVideo(e) {
   const block = e.target.closest('.block');
   const video = block.querySelector('.video');
   video.classList.add('video-play-mode');
-  video.querySelector('iframe').src += '&autoplay=1';
+  const iFrame = video.querySelector('iframe');
+  if (!iFrame.src && iFrame.dataset.src) {
+    iFrame.src = iFrame.dataset.src;
+  }
+  iFrame.src += '&autoplay=1';
 }
 
 function closeVideo(e) {
@@ -12,10 +16,10 @@ function closeVideo(e) {
   iframe.src = iframe.getAttribute('src').replace('&autoplay=1', '');
 }
 
-function buildDefaultVideo(id) {
-  const videoUrl = 'https://players.brightcove.net/6082840763001/SmCdEjug_default/index.html?videoId=';
+function buildDefaultVideo(id, inHero) {
+  const videoUrl = 'https://players.brightcove.net/6082840763001/6QBtcb032_default/index.html?videoId=';
   return `<div class="video-iframe-wrapper">
-    <iframe src='${videoUrl}${id}' allow="encrypted-media" allowfullscreen></iframe>
+    <iframe loading="lazy" ${inHero ? 'data-' : ''}src='${videoUrl}${id}' allow="encrypted-media" allowfullscreen></iframe>
   </div>`;
 }
 
@@ -26,10 +30,10 @@ function loadVideo(block) {
 
   const id = block.textContent.trim();
   if (id) {
-    const video = buildDefaultVideo(id);
+    const inHero = [...block.classList].includes('video-hero');
+    const video = buildDefaultVideo(id, inHero);
     block.innerHTML = video;
 
-    const inHero = [...block.classList].includes('video-hero');
     if (inHero) {
       block.parentNode.classList.add('video-wrapper-hero');
       // build play button
