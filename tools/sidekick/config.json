@@ -1,0 +1,14 @@
+{
+  "project": "PGA Sentry Tournament of Champions",
+  "host": "www.sentrytournamentofchampions.com",
+  "owner": "hlxsites",
+  "repo": "pga-sentry-tournament-of-champions",
+  "hlx3": true,
+  "plugins": [
+    {
+      "id": "course",
+      "title": "Course Builder",
+      "url": "/tools/tagger/index.html"
+    }
+  ]
+}
