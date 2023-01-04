@@ -69,7 +69,17 @@ export default async function decorate(block) {
   // transform content
   const backgroundImg = transformBackgroundImage(background);
   const wrappedCredits = wrapCredits(credits);
-  if (!video) video = buildVideoContent(block.querySelector('p > em'));
+  if (!video) {
+    let videoIdElement = block.querySelector('p > em');
+    if (!videoIdElement) {
+      // some video ids look suspiciusly like phone numbers
+      // causing mobile browsers to make them into tel: links
+      // detect that case
+      videoIdElement = block.querySelector('a[href^="tel:"]');
+    }
+    video = buildVideoContent(videoIdElement);
+    videoIdElement.remove();
+  }
 
   // order content
   const content = [status, name, wrappedCredits];

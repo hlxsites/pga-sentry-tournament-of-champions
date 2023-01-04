@@ -91,17 +91,23 @@ function parseCountdown(ms) {
 }
 
 function findTimeBetween(date) {
-  return Math.abs(date - new Date());
+  return (date - new Date());
 }
 
-function updateCountdown() {
+function updateCountdown(id) {
   const days = document.getElementById('countdown-days');
   const hours = document.getElementById('countdown-hours');
   const minutes = document.getElementById('countdown-minutes');
-  const countdownData = parseCountdown(findTimeBetween(window.placeholders.countdown));
-  days.textContent = countdownData.days;
-  hours.textContent = countdownData.hours;
-  minutes.textContent = countdownData.minutes;
+  const timeBetween = findTimeBetween(window.placeholders.countdown);
+  if (timeBetween > 0) { // if event occurs in the future
+    const countdownData = parseCountdown(timeBetween);
+    days.textContent = countdownData.days;
+    hours.textContent = countdownData.hours;
+    minutes.textContent = countdownData.minutes;
+  } else { // event has already begun
+    document.querySelector('.status-bar-countdown').remove();
+    clearTimeout(id);
+  }
 }
 
 /**
@@ -179,16 +185,20 @@ export default async function decorate(block) {
       // setup countdown
       if (placeholders.countdown) {
         window.placeholders.countdown = new Date(placeholders.countdown);
-        const countdownData = parseCountdown(findTimeBetween(window.placeholders.countdown));
-        const countdown = `<div class="status-bar-countdown">
-          <p>
-            <span id="countdown-days">${countdownData.days}</span> days : 
-            <span id="countdown-hours">${countdownData.hours}</span> hours : 
-            <span id="countdown-minutes">${countdownData.minutes}</span> minutes
-          </p>
-        </div>`;
-        data.insertAdjacentHTML('beforeend', countdown);
-        setInterval(updateCountdown, 60 * 1000); // update countdown every minute
+        const timeBetween = findTimeBetween(window.placeholders.countdown);
+        if (timeBetween > 0) { // if event occurs in the future
+          const countdownData = parseCountdown(timeBetween);
+          const countdown = `<div class="status-bar-countdown">
+            <p>
+              <span id="countdown-days">${countdownData.days}</span> days : 
+              <span id="countdown-hours">${countdownData.hours}</span> hours : 
+              <span id="countdown-minutes">${countdownData.minutes}</span> minutes
+            </p>
+          </div>`;
+          data.insertAdjacentHTML('beforeend', countdown);
+          // update countdown every minute
+          const intervalId = setInterval(() => updateCountdown(intervalId), 6 * 1000);
+        }
       }
       // check for stored weather
       const isStored = sessionStorage.getItem(`${placeholders.tourCode}${placeholders.tournamentId}Weather`);
