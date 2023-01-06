@@ -63,8 +63,7 @@ async function populateLeaderboard(block, config) {
       players.forEach((player, i) => {
         const bio = player.player_bio;
         const { tp, posMove } = calculateTP(player.start_position, player.current_position);
-        if (!i && !player.current_position.includes('T')) { // setup leader info for leaderboard leader
-          console.log('leader:', player);
+        if (!i) { // setup leader info for leaderboard leader
           const leader = document.createElement('div');
           leader.className = 'leaderboard-leader';
           leader.innerHTML = `
