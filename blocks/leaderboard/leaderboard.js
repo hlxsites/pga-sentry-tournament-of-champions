@@ -40,7 +40,7 @@ function buildLeaderboardTable() {
 
 function calculateTP(start, current) {
   // eslint-disable-next-line no-param-reassign
-  start = parseInt(start.replace('T', ''), 10);
+  start = parseInt(start.replace('T', ''), 10) || 1;
   // eslint-disable-next-line no-param-reassign
   current = parseInt(current.replace('T', ''), 10);
   const tp = start - current;
@@ -63,7 +63,8 @@ async function populateLeaderboard(block, config) {
       players.forEach((player, i) => {
         const bio = player.player_bio;
         const { tp, posMove } = calculateTP(player.start_position, player.current_position);
-        if (!i) { // setup leader info for leaderboard leader
+        if (!i && !player.current_position.includes('T')) { // setup leader info for leaderboard leader
+          console.log('leader:', player);
           const leader = document.createElement('div');
           leader.className = 'leaderboard-leader';
           leader.innerHTML = `
