@@ -1,7 +1,6 @@
 /* wrapper setup */
 main .section.player-feature-container {
-  --player-feature-status-color: var(--color-tan);
-
+  --player-feature-status-color: #00a3e0	;
   margin-bottom: 0;
   padding: 0;
 }
