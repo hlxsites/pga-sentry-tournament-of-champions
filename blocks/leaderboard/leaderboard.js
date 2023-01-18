@@ -40,11 +40,16 @@ function buildLeaderboardTable() {
 
 function calculateTP(start, current) {
   // eslint-disable-next-line no-param-reassign
-  start = parseInt(start.replace('T', ''), 10);
+  start = parseInt(start.replace('T', ''), 10) || 1;
   // eslint-disable-next-line no-param-reassign
-  current = parseInt(current.replace('T', ''), 10);
+  current = parseInt(current.replace('T', ''), 10) || start;
   const tp = start - current;
   return { tp: Math.abs(tp), posMove: tp > 0 };
+}
+
+function calculateThru(thru) {
+  if (thru) return thru < 18 ? thru : 'F';
+  return '--';
 }
 
 async function populateLeaderboard(block, config) {
@@ -85,7 +90,7 @@ async function populateLeaderboard(block, config) {
               </div>
               <div>
                 <p class="leaderboard-leader-stats-title">Thru</p>
-                <p class="leaderboard-leader-stats-stat">${player.thru < 18 ? player.thru : 'F'}</p>
+                <p class="leaderboard-leader-stats-stat">${calculateThru(player.thru)}</p>
               </div>
             </div>
           </div>`;

@@ -51,8 +51,8 @@ export function sampleRUM(checkpoint, data = {}) {
             data.cwv[measurement.name] = measurement.value;
             sendPing();
           };
-            // When loading `web-vitals` using a classic script, all the public
-            // methods can be found on the `webVitals` global namespace.
+          // When loading `web-vitals` using a classic script, all the public
+          // methods can be found on the `webVitals` global namespace.
           window.webVitals.getCLS(storeCWV);
           window.webVitals.getFID(storeCWV);
           window.webVitals.getLCP(storeCWV);
@@ -632,13 +632,13 @@ export function decorateButtons(element) {
           up.classList.add('button-container');
         }
         if (up.childNodes.length === 1 && up.tagName === 'STRONG'
-            && twoup.childNodes.length === 1 && twoup.tagName === 'P') {
+          && twoup.childNodes.length === 1 && twoup.tagName === 'P') {
           a.className = 'button primary';
           twoup.classList.add('button-container');
           up.outerHTML = a.outerHTML;
         }
         if (up.childNodes.length === 1 && up.tagName === 'EM'
-            && twoup.childNodes.length === 1 && twoup.tagName === 'P') {
+          && twoup.childNodes.length === 1 && twoup.tagName === 'P') {
           a.className = 'button secondary';
           twoup.classList.add('button-container');
           up.outerHTML = a.outerHTML;
@@ -1052,3 +1052,25 @@ export function addHeaderSizing(block, classPrefix = 'heading', selector = 'h1, 
     });
   });
 }
+
+try {
+  const hidden = Symbol('hidden');
+  const proxy = Symbol('proxy');
+  Object.defineProperty(window, 's', {
+    set(x) {
+      this[hidden] = x;
+      const handler = {
+        get(target, prop, receiver) {
+          if (prop === 't') {
+            sampleRUM('adobe-analytics');
+          }
+          return Reflect.get(target, prop, receiver);
+        },
+      };
+      this[proxy] = new Proxy(this[hidden], handler);
+    },
+    get() {
+      return this[proxy];
+    },
+  });
+} catch (e) { /* ignore */ }
