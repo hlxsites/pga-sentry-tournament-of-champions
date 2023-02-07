@@ -7,6 +7,7 @@ import {
   loadBlock,
   loadScript,
   getMetadata,
+  fetchGraphQL,
 } from './scripts.js';
 
 const placeholders = await fetchPlaceholders();
@@ -602,37 +603,62 @@ initGigya();
 async function populateStatusBar(statusBar) {
   if (statusBar) {
     const statusBarData = document.querySelector('.status-bar-data');
-    const tournament = `${placeholders.tourCode}${placeholders.tournamentId}`;
+    const id = `${placeholders.tourCode.toUpperCase()}${placeholders.currentYear}${placeholders.tournamentId}`;
     // fetch weather
     try {
-      const resp = await fetch(`https://little-forest-58aa.david8603.workers.dev/?url=https://www.pgatour.com/bin/data/feeds/weather.json/${tournament}`);
-      const { current_observation: weatherData } = await resp.json();
-      const location = weatherData.display_location.full;
-      const icon = weatherData.icon_url.replace('.gif', '.png');
-      const temp = weatherData.temp_f;
-      sessionStorage.setItem(`${tournament}Weather`, JSON.stringify({
-        location, icon, temp,
-      }));
-      const weatherDisplayed = statusBar.querySelector('.status-bar-weather');
-      if (weatherDisplayed) {
-        const barLocation = weatherDisplayed.querySelector('.status-bar-location');
-        barLocation.textContent = location;
-        const barImg = weatherDisplayed.querySelector('img');
-        barImg.src = icon;
-        barImg.alt = weatherData.weather;
-        const barTemp = weatherDisplayed.querySelector('.status-bar-temp');
-        barTemp.textContent = temp;
-      } else {
-        const weather = document.createElement('div');
-        weather.className = 'status-bar-weather';
-        weather.innerHTML = `<p>
-            <a href="/weather">
-              <span class="status-bar-location">${location}</span>
-              <img src="${icon}" alt="${weatherData.weather}"/ >
-              <span class="status-bar-temp">${temp}</span>
-            </a>
-          </p>`;
-        statusBarData.append(weather);
+      const weatherResp = await fetchGraphQL(`query Weather($tournamentId: ID!) {
+        weather(tournamentId: $tournamentId) {
+          hourly {
+            condition
+            temperature {
+              ... on StandardWeatherTemp {
+                __typename
+                tempF
+              }
+              ... on RangeWeatherTemp {
+                __typename
+                maxTempF
+              }
+            }
+          }
+        }
+      }
+      `, {
+        tournamentId: id,
+      });
+      if (weatherResp.ok) {
+        const weatherData = await weatherResp.json();
+        if (weatherData && weatherData.data && weatherData.data.weather) {
+          const location = placeholders.city;
+          const currentWeather = weatherData.data.weather.hourly[0];
+          const icon = `/icons/weather-${currentWeather.condition.toLowerCase().replaceAll('_', '-')}.svg`;
+          // eslint-disable-next-line no-underscore-dangle
+          const temp = currentWeather.temperature.__typename === 'StandardWeatherTemp' ? currentWeather.temperature.tempF : currentWeather.temperature.maxTempF;
+          sessionStorage.setItem(`${id}Weather`, JSON.stringify({
+            location, icon, temp,
+          }));
+          const weatherDisplayed = statusBar.querySelector('.status-bar-weather');
+          if (weatherDisplayed) {
+            const barLocation = weatherDisplayed.querySelector('.status-bar-location');
+            barLocation.textContent = location;
+            const barImg = weatherDisplayed.querySelector('img');
+            barImg.src = icon;
+            barImg.alt = currentWeather.condition;
+            const barTemp = weatherDisplayed.querySelector('.status-bar-temp');
+            barTemp.textContent = temp;
+          } else {
+            const weather = document.createElement('div');
+            weather.className = 'status-bar-weather';
+            weather.innerHTML = `<p>
+                  <a href="/weather">
+                    <span class="status-bar-location">${location}</span>
+                    <img src="${icon}" alt="${currentWeather.condition}"/ >
+                    <span class="status-bar-temp">${temp}</span>
+                  </a>
+                </p>`;
+            statusBarData.append(weather);
+          }
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console

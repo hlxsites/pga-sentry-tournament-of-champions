@@ -1,4 +1,9 @@
-import { makeLinksRelative, readBlockConfig, updateExternalLinks } from '../../scripts/scripts.js';
+import {
+  makeLinksRelative,
+  readBlockConfig,
+  updateExternalLinks,
+  fetchCors,
+} from '../../scripts/scripts.js';
 
 export default async function decorate(block) {
   // const stories = block.querySelectorAll('a');
@@ -31,7 +36,7 @@ export default async function decorate(block) {
         // populate related stories content
         /* TODO: add CORS header, to be replaced with direct API */
         const directURL = `${storiesURL}/path=/content&tags=${config.tags.replace(/ /g, '')}&relatedTo=/content/the-players${window.location.pathname}&size=${limit}`;
-        const resp = await fetch(`https://little-forest-58aa.david8603.workers.dev/?url=${encodeURIComponent(directURL)}`);
+        const resp = await fetchCors(directURL);
         const json = await resp.json();
         json.items.forEach((story, i) => {
           const prefix = story.image.startsWith('brightcove') ? videoPrefix : damPrefix;

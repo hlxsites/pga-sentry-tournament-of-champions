@@ -4,40 +4,43 @@ import {
   toClassName,
   updateExternalLinks,
   fetchPlaceholders,
+  fetchGraphQL,
 } from '../../scripts/scripts.js';
 
 async function mergeLocalNews(feed, maxItems) {
   const resp = await fetch('/query-index.json');
   const json = await resp.json();
-  const newerThan = feed.items[feed.items.length - 1].created;
+  const newerThan = feed.length === 0 ? -1 : feed[feed.length - 1].updateDate;
   const matched = json.data.filter((item) => {
     if (item.date) {
       const itemDate = new Date(Math.round((item.date - (25567 + 1)) * 86400 * 1000)).valueOf();
-      item.created = itemDate;
-      item.link = item.path;
+      item.updateDate = itemDate;
+      item.url = item.path;
       item.type = 'article';
+      item.articleImage = item.image;
+      item.teaserHeadline = item.title;
       return (itemDate > newerThan);
     }
     return false;
   });
   // check feed items for relative links
-  feed.items.map((item) => {
-    const { link } = item;
-    const { host, pathname } = new URL(link);
+  feed.map((item) => {
+    const { url } = item;
+    const { host, pathname } = new URL(url);
     if (host.includes('pgatour.com')) {
       const splitPath = `/${pathname.split('/').slice(3).join('/')}`;
       const match = matched.find((m) => splitPath.includes(m.path));
-      if (match) item.link = splitPath;
+      if (match) item.url = splitPath;
     }
     return item;
   });
-  const merged = [...feed.items, ...matched];
+  const merged = [...feed, ...matched];
   const deduped = [...new Map(merged.map((m) => [
-    new URL(m.link, window.location.href).pathname.split('.')[0],
+    new URL(m.url, window.location.href).pathname.split('.')[0],
     m,
   ])).values()];
-  const sorted = deduped.sort((e1, e2) => e2.created - e1.created);
-  feed.items = sorted.slice(0, maxItems);
+  const sorted = deduped.sort((e1, e2) => e2.updateDate - e1.updateDate);
+  return sorted.slice(0, maxItems);
 }
 
 function filterNews(e) {
@@ -94,11 +97,43 @@ function paginateNews(e) {
   toggleShowLessButton(feed);
 }
 
+async function getNewsArticles(tags, limit, tourcode) {
+  try {
+    const resp = await fetchGraphQL(`query GetNewsArticles($tour: TourCode, $franchise: String, $franchises: [String!], $playerId: ID, $limit: Int, $offset: Int, $tags: [String!]) {
+    newsArticles(tour: $tour, franchise: $franchise, franchises: $franchises, playerId: $playerId, limit: $limit, offset: $offset, tags: $tags) {
+        articles {
+            id
+            articleImage
+            publishDate
+            teaserHeadline
+            updateDate
+            url
+        }
+    }
+  }`, {
+      limit,
+      tags,
+      tour: tourcode,
+    });
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json.data && json.data.newsArticles && json.data.newsArticles.articles) {
+        return json.data.newsArticles.articles;
+      }
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('Could not load news', err);
+  }
+
+  // return an ermpty array if fail, so that local news can still be displayed
+  return [];
+}
+
 export default async function decorate(block) {
   const config = readBlockConfig(block);
   const videoPrefix = 'https://pga-tour-res.cloudinary.com/image/upload/c_fill,f_auto,g_face,h_311,q_auto,w_425/v1/';
   const damPrefix = 'https://www.pgatour.com';
-  const newsURL = config.source;
   const limit = config.limit || 8;
 
   const pinnedItems = [];
@@ -131,35 +166,30 @@ export default async function decorate(block) {
   const observer = new IntersectionObserver(async (entries) => {
     if (entries.some((entry) => entry.isIntersecting)) {
       observer.disconnect();
-      // populate news content
-      /* TODO: add CORS header, to be replaced with direct API */
-      let directURL;
+      const placeholders = await fetchPlaceholders();
+      let tags;
       if (config.tags) {
-        const tags = config.tags.replace(/ /g, '').split(',').join('+');
-        directURL = `${newsURL}/tags=${tags}&size=${limit - pinnedItems.length}`;
+        tags = config.tags.replace(/ /g, '').split(',').join('+');
       } else {
-        const placeholders = await fetchPlaceholders();
-        directURL = `${newsURL}/path=/content&tags=${placeholders.newsTags}&size=${limit - pinnedItems.length}`;
+        tags = placeholders.newsTags.split('+');
       }
-      const resp = await fetch(`https://little-forest-58aa.david8603.workers.dev/?url=${encodeURIComponent(directURL)}`);
-      const json = await resp.json();
 
-      await mergeLocalNews(json, config.limit);
-
-      [...pinnedItems, ...json.items].forEach((item, idx) => {
+      const newsFeed = await getNewsArticles(tags, limit, placeholders.tourCode);
+      const mergedNews = await mergeLocalNews(newsFeed, config.limit);
+      [...pinnedItems, ...mergedNews].forEach((item, idx) => {
         let prefix = '';
-        if (item.image.startsWith('brightcove')) prefix = videoPrefix;
-        if (item.image.startsWith('/content/dam')) prefix = damPrefix;
+        if (item.articleImage.startsWith('brightcove')) prefix = videoPrefix;
+        if (item.articleImage.startsWith('/content/dam')) prefix = damPrefix;
         const li = document.createElement('li');
-        li.classList.add('news-item', `news-item-${item.type}`);
+        li.classList.add('news-item', `news-item-${item.type || 'article'}`);
         const video = item.videoId ? '<div class="news-item-play"></div>' : '';
         const a = document.createElement('a');
-        a.href = item.link;
+        a.href = item.url;
         a.innerHTML = `
-          <div class="news-item-image"><img loading="${idx < 8 ? 'eager' : 'lazy'}" src="${item.pinned ? '' : prefix}${item.image}"></div>
-          <div class="news-item-body"><a href="${item.link}">${item.title}</a></div>
-          ${video}
-        `;
+            <div class="news-item-image"><img loading="${idx < 8 ? 'eager' : 'lazy'}" src="${item.pinned ? '' : prefix}${item.articleImage}"></div>
+            <div class="news-item-body"><a href="${item.url}">${item.teaserHeadline}</a></div>
+            ${video}
+          `;
         li.append(a);
         const toReplace = ul.querySelector('.news-placeholder');
         if (toReplace) {

@@ -2,81 +2,6 @@ main .past-results {
   --past-results-text-color: var(--color-blue);
 }
 
-main .past-results ul {
-  list-style: none;
-  padding: 0;
-}
-
-main .past-results .past-results-container {
-  color: var(--past-results-text-color);
-}
-
-main .past-results h2.title {
-  color: var(--past-results-text-color);
-  font-family: var(--body-font-family);
-  font-size: var(--heading-font-size-l);
-  text-transform: unset;
-}
-
-main .past-results span.row {
-  display: block;
-}
-
-@media (min-width: 700px) {
-  main .past-results span.row {
-    display: unset;
-  }
-
-  main .past-results .pic {
-    margin: 0 4px;
-  }
-
-  main .past-results .pic::after {
-    content: '\2022';
-  }
-}
-
-main .past-results .note-item {
-  border-top: 1px solid var(--color-gray-light);
-  border-bottom: 1px solid var(--color-gray-light);
-  padding: 8px 0;
-}
-
-main .past-results .note-item button {
-  position: relative;
-  width: 100%;
-  margin: unset;
-  border: 0;
-  padding: unset;
-  background-color: unset;
-  color: unset;
-  font-size: unset;
-  text-align: left;
-  text-transform: unset;
-}
-
-.past-results-notes .note-item button::after {
-  content: '';
-  position: absolute;
-  right: 3px;
-  top: 50%;
-  width: 6px;
-  height: 6px;
-  border-right: 2px solid;
-  border-bottom: 2px solid;
-  transform: translateY(-50%) rotate(45deg);
-  transition: transform .2s;
-}
-
-.past-results-notes .note-item button[aria-expanded=true]::after {
-  transform: translateY(-50%) rotate(225deg);
-}
-
-main .past-results .note-item .note-content {
-  margin-top: 8px;
-  color: var(--text-color);
-}
-
 /* controls */
 main .past-results .controls-item {
   display: flex;
@@ -99,20 +24,6 @@ main .past-results select {
   text-transform: uppercase;
 }
 
-main .past-results .button-print {
-  display: none;
-  visibility: hidden;
-  color: var(--color-gray);
-  font-size: var(--body-font-size-xxs);
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-main .past-results .button-print svg {
-  width: 24px;
-  height: 24px;
-}
-
 @media (min-width: 700px) {
   main .past-results .controls-left {
     display: grid;
@@ -126,13 +37,6 @@ main .past-results .button-print svg {
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 32px;
-  }
-
-  main .past-results .button-print {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    visibility: visible;
   }
 }
 
@@ -281,17 +185,50 @@ main .past-results table .table-data tr:nth-child(even) td {
   background-color: var(--background-color);
 }
 
-main .past-results table .hidden-small,
-main .past-results table .position,
-main .past-results table .to-par-value {
+main .past-results table .hidden-small {
   display: none;
   visibility: hidden;
   text-align: center;
 }
 
+main .past-results table .additional-data {
+  text-align: center;
+}
+
+main .past-results table .position {
+  text-align: center;
+  display: block;
+}
+
 main .past-results table td[data-sort-fedexcup-points],
 main .past-results table td.total-score {
   text-align: center;
+}
+
+main .past-results table :is(.to-par-value, .total-score-value) {
+  display: none;
+  visibility: hidden;
+  text-align: center;
+}
+
+main .past-results table[data-display-rounds='1'] :is(.to-par-value, .total-score-value).round-1 {
+  visibility: visible;
+  display: block;
+}
+
+main .past-results table[data-display-rounds='2'] :is(.to-par-value, .total-score-value).round-2 {
+  visibility: visible;
+  display: block;
+}
+
+main .past-results table[data-display-rounds='3'] :is(.to-par-value, .total-score-value).round-3 {
+  visibility: visible;
+  display: block;
+}
+
+main .past-results table[data-display-rounds='4'] :is(.to-par-value, .total-score-value).round-4 {
+  visibility: visible;
+  display: block;
 }
 
 main .past-results table[data-display-rounds='1'] .round.round-2::before,
@@ -313,39 +250,10 @@ main .past-results table.hide-total-values [data-sort-total-score]::before {
   background: inherit;
 }
 
-main .past-results table[data-display-rounds='1'] .position.round-1,
-main .past-results table[data-display-rounds='1'] .to-par-value.round-1,
-main .past-results table[data-display-rounds='2'] .position.round-2,
-main .past-results table[data-display-rounds='2'] .to-par-value.round-2,
-main .past-results table[data-display-rounds='3'] .position.round-3,
-main .past-results table[data-display-rounds='3'] .to-par-value.round-3,
-main .past-results table[data-display-rounds='4'] .position.round-4,
-main .past-results table[data-display-rounds='4'] .to-par-value.round-4 {
-  display: block;
-  visibility: visible;
-}
-
 main .past-results table[data-display-score='total-score'] .to-par,
 main .past-results table[data-display-score='to-par'] .total-score {
   display: none;
   visibility: hidden;
-}
-
-main .past-results .print-visible {
-  display: none;
-  visibility: hidden;
-}
-
-@media only print {
-  main .past-results .print-hidden .note-list {
-    display: none;
-    visibility: hidden;
-  }
-
-  main .past-results .print-visible {
-    display: block;
-    visibility: visible;
-  }
 }
 
 @media (min-width: 700px) {

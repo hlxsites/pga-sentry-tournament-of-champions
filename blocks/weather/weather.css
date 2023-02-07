@@ -276,12 +276,12 @@ main .weather.forecast .weather-toggle button[aria-selected=false]:hover {
   background-color: var(--color-gray-light);
 }
 
-main .weather.forecast .weather-table-body.weather-table-10-days-forecast .weather-col-hourly {
+main .weather.forecast .weather-table-body.weather-table-7-day-forecast .weather-col-hourly {
   display: none;
   visibility: hidden;
 }
 
-main .weather.forecast .weather-table-body.weather-table-hourly .weather-col-10-days-forecast {
+main .weather.forecast .weather-table-body.weather-table-hourly .weather-col-7-day-forecast {
   display: none;
   visibility: hidden;
 }

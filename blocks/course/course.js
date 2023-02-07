@@ -1,4 +1,4 @@
-import { fetchPlaceholders } from '../../scripts/scripts.js';
+import { fetchPlaceholders, fetchCors } from '../../scripts/scripts.js';
 
 function findStatPercent(id, stats, divisor) {
   const stat = stats.find((s) => s.id === id);
@@ -23,7 +23,7 @@ async function loadStats(block) {
   const placeholders = await fetchPlaceholders();
   const code = placeholders.tourCode;
   const id = placeholders.tournamentId;
-  const resp = await fetch(`https://little-forest-58aa.david8603.workers.dev/?url=${encodeURIComponent(`https://statdata.pgatour.com/${code}/${id}/coursestat.json`)}`);
+  const resp = await fetchCors(`https://statdata.pgatour.com/${code}/${id}/coursestat.json`);
   const json = await resp.json();
   if (json && json.courses && json.courses[0].holes) {
     const holes = block.querySelectorAll('.course-hole');

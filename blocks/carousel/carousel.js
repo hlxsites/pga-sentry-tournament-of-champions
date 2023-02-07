@@ -1,4 +1,9 @@
-import { toClassName, readBlockConfig, fetchPlaceholders } from '../../scripts/scripts.js';
+import {
+  toClassName,
+  readBlockConfig,
+  fetchPlaceholders,
+  fetchCors,
+} from '../../scripts/scripts.js';
 
 async function insertGallerySlides(block) {
   const damPrefix = 'https://www.pgatour.com';
@@ -8,21 +13,32 @@ async function insertGallerySlides(block) {
   block.innerHTML = '';
 
   const directURL = `${galleryURL}&size=${limit}`;
-  const resp = await fetch(`https://little-forest-58aa.david8603.workers.dev/?url=${encodeURIComponent(directURL)}`);
-  const json = await resp.json();
+  try {
+    const resp = await fetchCors(directURL);
+    if (resp.ok) {
+      const json = await resp.json();
 
-  json.items.forEach((photo) => {
-    const div = document.createElement('div');
-    div.innerHTML = `
-      <div class="gallery-image"><picture><img src="${damPrefix}${photo.image}" alt="${photo.description}"/ ></picture></div>
-      <div class="gallery-text">
-        <p class="gallery-text-title">Photo Gallery${config.title ? `: ${config.title}` : ''}</p>
-        ${photo.description ? `<p class="gallery-text-desc">${photo.description}</p>` : ''}
-        ${photo.credit ? `<p class="gallery-text-credit">Photo by <strong>${photo.credit}</strong></p>` : ''}
-      </div>
-    `;
-    block.append(div);
-  });
+      json.items.forEach((photo) => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+        <div class="gallery-image"><picture><img src="${damPrefix}${photo.image}" alt="${photo.description}"/ ></picture></div>
+        <div class="gallery-text">
+          <p class="gallery-text-title">Photo Gallery${config.title ? `: ${config.title}` : ''}</p>
+          ${photo.description ? `<p class="gallery-text-desc">${photo.description}</p>` : ''}
+          ${photo.credit ? `<p class="gallery-text-credit">Photo by <strong>${photo.credit}</strong></p>` : ''}
+        </div>
+      `;
+        block.append(div);
+      });
+    } else {
+      // hide block in cases where feed fails
+      block.parentNode.remove();
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('Could not load gallery', err);
+    block.parentNode.remove();
+  }
 }
 
 function findStatPercent(id, stats, divisor) {
@@ -41,7 +57,7 @@ async function insertCourseFeedSlides(block) {
   const placeholders = await fetchPlaceholders();
   block.innerHTML = '';
 
-  const resp = await fetch(`https://little-forest-58aa.david8603.workers.dev/?url=${encodeURIComponent(`https://statdata.pgatour.com/${placeholders.tourCode}/${placeholders.tournamentId}/coursestat.json`)}`);
+  const resp = await fetchCors(`https://statdata.pgatour.com/${placeholders.tourCode}/${placeholders.tournamentId}/coursestat.json`);
   const json = await resp.json();
   if (json && json.courses && json.courses[0].holes) {
     const code = json.tourCode;
@@ -53,7 +69,7 @@ async function insertCourseFeedSlides(block) {
       const holeJpg = `${cloudinaryPrefix},w_1290/v1/pgatour/courses/${code}${perm}/${courseId}/holes/hole${hole.holeNum}.jpg`;
       const holePng = `${cloudinaryPrefix},w_150/holes_${config.year || new Date().getFullYear()}_${code}_${perm}_${courseId}_overhead_full_${hole.holeNum}.png`;
       // eslint-disable-next-line no-await-in-loop
-      const metaresp = await fetch(`https://little-forest-58aa.david8603.workers.dev/?url=${encodeURIComponent(`${damSrc}/jcr:content/metadata.json`)}`);
+      const metaresp = await fetchCors(`${damSrc}/jcr:content/metadata.json`);
       // eslint-disable-next-line no-await-in-loop
       const meta = await metaresp.json();
       const metaDesc = meta['dc:description'];
