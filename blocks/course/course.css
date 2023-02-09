@@ -149,6 +149,7 @@ main .course .course-hole-image { /* bg img wrapper */
 
 main .course .course-hole-text {
   box-sizing: border-box;
+  width: 100%;
   padding: 0 16px;
   padding-bottom: 40px; /* for buttons */
   background-color: var(--course-background-color);

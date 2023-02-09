@@ -76,7 +76,14 @@ export default async function decorate(block) {
     if (text) {
       const credits = document.createElement('div');
       credits.className = 'course-hole-credits';
-      credits.append(text.lastElementChild);
+      const creditsText = text.lastElementChild;
+      if (creditsText && creditsText.nodeName !== 'H2' && !creditsText.querySelector('img')) {
+        credits.append(creditsText);
+      } else {
+        const fallback = document.createElement('p');
+        fallback.innerHTML = '&nbsp;';
+        credits.append(fallback);
+      }
       const data = document.createElement('div');
       data.className = 'course-hole-data';
       [...text.children].forEach((child) => data.append(child));
