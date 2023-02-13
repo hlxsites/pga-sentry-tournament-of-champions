@@ -7,6 +7,23 @@ import {
   fetchGraphQL,
 } from '../../scripts/scripts.js';
 
+function filterHasItems(filter, block) {
+  let hasItems = true;
+  const items = [...block.querySelectorAll('.news .news-item')];
+  if (filter.toLowerCase().includes('article')) {
+    hasItems = items.some((item) => {
+      const itemType = [...item.classList][1];
+      return itemType.includes('article');
+    });
+  } else if (filter.toLowerCase().includes('video')) {
+    hasItems = items.some((item) => {
+      const itemType = [...item.classList][1];
+      return itemType.includes('video');
+    });
+  }
+  return hasItems;
+}
+
 async function mergeLocalNews(feed, maxItems) {
   const resp = await fetch('/query-index.json');
   const json = await resp.json();
@@ -174,7 +191,7 @@ export default async function decorate(block) {
         tags = placeholders.newsTags.split('+');
       }
 
-      const newsFeed = await getNewsArticles(tags, limit, placeholders.tourCode);
+      const newsFeed = await getNewsArticles(tags, limit, placeholders.tourCode.toUpperCase());
       const mergedNews = await mergeLocalNews(newsFeed, config.limit);
       [...pinnedItems, ...mergedNews].forEach((item, idx) => {
         let prefix = '';
@@ -205,13 +222,15 @@ export default async function decorate(block) {
         const container = document.createElement('div');
         container.classList.add('button-container', 'news-filters');
         filters.forEach((filter, i) => {
-          const button = document.createElement('button');
-          button.textContent = filter;
-          button.setAttribute('aria-selected', !i); // first filter is default view
-          button.setAttribute('role', 'tab');
-          button.setAttribute('data-filter', toClassName(filter));
-          button.addEventListener('click', filterNews);
-          container.append(button);
+          if (filterHasItems(filter, block)) {
+            const button = document.createElement('button');
+            button.textContent = filter;
+            button.setAttribute('aria-selected', !i); // first filter is default view
+            button.setAttribute('role', 'tab');
+            button.setAttribute('data-filter', toClassName(filter));
+            button.addEventListener('click', filterNews);
+            container.append(button);
+          }
         });
         block.prepend(container);
       }
