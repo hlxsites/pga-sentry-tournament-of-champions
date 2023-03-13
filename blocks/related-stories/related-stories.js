@@ -2,15 +2,61 @@ import {
   makeLinksRelative,
   readBlockConfig,
   updateExternalLinks,
-  fetchCors,
+  fetchGraphQL,
+  fetchPlaceholders,
 } from '../../scripts/scripts.js';
 
+async function getArticles(limit, placeholders) {
+  try {
+    const resp = await fetchGraphQL(`query GetNewsArticles($tour: TourCode, $franchise: String, $franchises: [String!], $playerId: ID, $playerIds: [ID!], $limit: Int, $offset: Int, $tournamentNum: String) {
+      newsArticles(tour: $tour, franchise: $franchise, franchises: $franchises, playerId: $playerId, playerIds: $playerIds, limit: $limit, offset: $offset, tournamentNum: $tournamentNum) {
+          articles {
+              id
+              franchise
+              franchiseDisplayName
+              articleImage
+              headline
+              publishDate
+              teaserContent
+              teaserHeadline
+              updateDate
+              url
+          }
+      }
+  }`, {
+      tournamentNum: placeholders.tournamentId,
+      limit,
+    });
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json.data && json.data.newsArticles && json.data.newsArticles.articles) {
+        const articles = json.data.newsArticles.articles.map((article) => {
+          const articleUrl = new URL(article.url);
+          articleUrl.searchParams.delete('webview');
+          return {
+            url: articleUrl.toString(),
+            type: 'article',
+            image: article.articleImage,
+            title: article.teaserHeadline,
+            date: article.updateDate,
+            franchise: article.franchise,
+            franchiseDisplayName: article.franchiseDisplayName,
+          };
+        });
+        return articles;
+      }
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('Could not load news', err);
+  }
+
+  // return an empty array if fail, so that local news can still be displayed
+  return [];
+}
+
 export default async function decorate(block) {
-  // const stories = block.querySelectorAll('a');
-  const videoPrefix = 'https://pga-tour-res.cloudinary.com/image/upload/c_fill,f_auto,g_face,h_311,q_auto,w_425/v1/';
-  const damPrefix = 'https://www.pgatour.com';
   const config = readBlockConfig(block);
-  const storiesURL = 'https://www.pgatour.com/bin/data/feeds/relatedcontent.json';
   const limit = config.limit || 5;
   block.innerHTML = '';
 
@@ -32,32 +78,26 @@ export default async function decorate(block) {
   const observer = new IntersectionObserver(async (entries) => {
     if (entries.some((entry) => entry.isIntersecting)) {
       observer.disconnect();
-      if (storiesURL) {
-        // populate related stories content
-        /* TODO: add CORS header, to be replaced with direct API */
-        const directURL = `${storiesURL}/path=/content&tags=${config.tags.replace(/ /g, '')}&relatedTo=/content/the-players${window.location.pathname}&size=${limit}`;
-        const resp = await fetchCors(directURL);
-        const json = await resp.json();
-        json.items.forEach((story, i) => {
-          const prefix = story.image.startsWith('brightcove') ? videoPrefix : damPrefix;
-          const li = document.createElement('li');
-          li.classList.add('related-stories-story', `related-stories-story-${story.type}`);
-          const video = story.videoId ? '<div class="related-stories-story-play"></div>' : '';
-          const a = document.createElement('a');
-          a.href = story.link;
-          a.innerHTML = `
+      const placeholders = await fetchPlaceholders();
+      const articles = await getArticles(limit, placeholders);
+      articles.forEach((story, i) => {
+        const li = document.createElement('li');
+        li.classList.add('related-stories-story');
+        const a = document.createElement('a');
+        a.href = story.url;
+        a.innerHTML = `
             <div class="related-stories-story-image">
-              <picture><img src="${prefix}${story.image}" alt="${story.description}" /></picture>${video}
+              <picture><img src="${story.image}" alt="${story.title}" /></picture>
             </div>
             <div class="related-stories-story-body">
-              ${story.franchise ? `<p>${story.franchise}</p>` : ''}
-              <a href="${story.link}">${story.title}</a>
+              ${story.franchise ? `<p>${story.franchiseDisplayName}</p>` : ''}
+              <a href="${story.url}">${story.title}</a>
             </div>
           `;
-          li.append(a);
-          [...ul.children][i].replaceWith(li);
-        });
-      }
+        li.append(a);
+        [...ul.children][i].replaceWith(li);
+      });
+
       makeLinksRelative(block);
       updateExternalLinks(block);
     }

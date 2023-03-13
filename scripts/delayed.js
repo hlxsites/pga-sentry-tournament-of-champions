@@ -8,6 +8,9 @@ import {
   loadScript,
   getMetadata,
   fetchGraphQL,
+  clearDataLayer,
+  pushOneTrustConsentGroups,
+  sendAnalyticsPageEvent,
 } from './scripts.js';
 
 const placeholders = await fetchPlaceholders();
@@ -35,30 +38,6 @@ window.pgatour.tracking = {
     status: false,
   },
 };
-
-const pageType = window.location.pathname === '/' ? 'homePage' : 'contentPage';
-
-const pname = window.location.pathname.split('/').pop();
-window.pgatour.Omniture = {
-  properties: {
-    pageName: `${placeholders.adsS1}:${placeholders.adsS2}:${placeholders.pagename}:${pname}`,
-    eVar16: `${placeholders.adsS1}:${placeholders.adsS2}:${placeholders.pagename}:${pname}`,
-    prop18: pageType,
-    eVar1: 'pgatour',
-    prop1: 'pgatour',
-    prop2: `${placeholders.tourCode}${placeholders.tournamentId}`,
-    eVar2: `${placeholders.tourCode}${placeholders.tournamentId}`,
-    eVar6: window.location.href,
-  },
-  defineOmnitureVars: () => {
-    if (window.s) {
-      Object.assign(window.s, window.pgatour.Omniture.properties);
-    }
-  },
-
-};
-
-window.pgatour.docWrite = document.write.bind(document);
 
 /* setup favorite players */
 function alphabetize(a, b) {
@@ -704,8 +683,16 @@ async function OptanonWrapper() {
     }
   }
 
-  loadScript(`https://assets.adobedtm.com/d17bac9530d5/90b3c70cfef1/launch-1ca88359b76c${isProd ? '.min' : ''}.js`, () => {
-    dispatchEvent(new Event('load'));
+  clearDataLayer();
+  loadScript(`https://assets.adobedtm.com/d17bac9530d5/a14f7717d75d/launch-aa66aad171be${isProd ? '.min' : ''}.js`, () => {
+    pushOneTrustConsentGroups();
+    // eslint-disable-next-line no-undef
+    gigya.accounts.getAccountInfo({
+      callback: (response) => {
+        window.gigyaAccountInfo = response;
+        sendAnalyticsPageEvent();
+      },
+    });
   });
 }
 
@@ -713,6 +700,8 @@ const otId = placeholders.onetrustId;
 if (otId) {
   const cookieScript = loadScript('https://cdn.cookielaw.org/scripttemplates/otSDKStub.js');
   cookieScript.setAttribute('data-domain-script', `${otId}${isProd ? '' : '-test'}`);
+  cookieScript.setAttribute('data-dlayer-name', 'adobeDataLayer');
+  cookieScript.setAttribute('data-nscript', 'beforeInteractive');
 
   window.OptanonWrapper = OptanonWrapper;
 

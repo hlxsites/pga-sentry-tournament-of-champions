@@ -855,7 +855,7 @@ header .status-bar .status-bar-weather .status-bar-temp {
 }
 
 header .status-bar .status-bar-weather .status-bar-temp::after {
-  content: '°F >';
+  content: ' >';
   padding-left: 2px;
   font-weight: 100;
 }
