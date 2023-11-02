@@ -2,7 +2,7 @@ version: 1
 
 sitemaps:
   website:
-    origin: https://thesentry.com
+    origin: https://www.thesentry.com
     lastmod: YYYY-MM-DD
     languages:
       default:
