@@ -3,7 +3,7 @@
 ## Environments
 - Preview: https://main--pga-sentry-tournament-of-champions--hlxsites.hlx.page/
 - Live: https://main--pga-sentry-tournament-of-champions--hlxsites.hlx.live/
-- Prod: https://www.sentrytournamentofchampions.com/
+- Prod: https://thesentry.com/
 
 ## Installation
 
